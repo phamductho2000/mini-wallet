@@ -1,0 +1,26 @@
+server.port: 8082
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/txn
+    username: postgres
+    password: pass
+  jpa.hibernate.ddl-auto: update
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
+wallet-service:
+  url: http://localhost:8081
+
+# Feign timeout: connect ngắn, read vừa phải. Thử đổi read-timeout=200 + sleep ở wallet để thấy timeout.
+spring.cloud.openfeign.client.config.default:
+  connect-timeout: 1000
+  read-timeout: 3000
+  logger-level: basic
+logging.level.com.dudu.miniwallet.transaction.WalletClient: DEBUG
