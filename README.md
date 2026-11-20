@@ -37,6 +37,9 @@ Xem log notification-service: `📨 Notify user ...`
 ## Học Kafka từ 1 broker lên cluster
 Xem [docs/KAFKA_ROADMAP.md](docs/KAFKA_ROADMAP.md). Cluster 3 broker: `docker-compose.3broker.yml`.
 
+## Luyện scale: từ tải thấp lên cao
+Xem [docs/SCALING_LAB.md](docs/SCALING_LAB.md) (k6 `scripts/load.js`, seed `scripts/seed-wallets.sh`, monitoring `docker-compose.monitoring.yml`). Giải thích config: [docs/KAFKA_CONFIG.md](docs/KAFKA_CONFIG.md).
+
 ## Bài tập (mỗi bài ứng với 1 câu phỏng vấn)
 1. **Idempotency**: bắn 20 request song song cùng `Idempotency-Key` (`hey`/`k6`/`xargs -P`) → chỉ trừ 1 lần. Giải thích vai trò unique index.
 2. **Race condition**: tạo ví A=100, bắn 50 request debit 10 song song với các key khác nhau → số dư không âm, đúng 10 request thành công. Sau đó đổi `debit` sang `findById` + set + save (read-modify-write) để thấy lost update; rồi thử `@Version` và Redisson lock, so sánh.

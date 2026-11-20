@@ -5,4 +5,6 @@ import java.util.List;
 
 public interface OutboxRepository extends JpaRepository<OutboxEvent, Long> {
     List<OutboxEvent> findTop100BySentFalseOrderByIdAsc();
+
+    long countBySentFalse();
 }
