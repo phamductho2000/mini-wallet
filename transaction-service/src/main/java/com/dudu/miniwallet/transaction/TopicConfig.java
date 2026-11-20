@@ -11,4 +11,9 @@ public class TopicConfig {
     public NewTopic transferCompleted() {
         return TopicBuilder.name("transfer.completed").partitions(3).replicas(1).build();
     }
+
+    @Bean
+    public NewTopic testCompleted() {
+        return TopicBuilder.name("test.completed").partitions(1).replicas(1).build();
+    }
 }
