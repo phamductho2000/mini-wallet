@@ -10,7 +10,7 @@ services:
   kafka:
     image: apache/kafka:3.8.0        # KRaft, không cần Zookeeper
     ports: ["9092:9092"]
-    mem_limit: 512m
+    mem_limit: 1g
     cpus: 1
     environment:
       KAFKA_NODE_ID: 1
@@ -30,13 +30,45 @@ services:
       KAFKA_LOG_RETENTION_BYTES: 1073741824  # tối đa ~1GB mỗi partition
       KAFKA_LOG_SEGMENT_BYTES: 67108864      # segment 64MB để xóa gọn hơn (mặc định 1GB)
 
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.8.0
+    container_name: kafka-connect
+    depends_on:
+      - kafka
+    ports:
+      - "8083:8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'kafka:29092'
+      CONNECT_REST_ADVERTISED_HOST_NAME: 'kafka-connect'
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: 'compose-connect-group'
+      # Các topic nội bộ bắt buộc của Kafka Connect
+      CONNECT_CONFIG_STORAGE_TOPIC: '_connect-configs'
+      CONNECT_OFFSET_STORAGE_TOPIC: '_connect-offsets'
+      CONNECT_STATUS_STORAGE_TOPIC: '_connect-status'
+      # Để replication factor = 1 vì chỉ có 1 broker
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      # Converter mặc định (JSON không kèm Schema)
+      CONNECT_KEY_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
+      CONNECT_VALUE_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: 'false'
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: 'false'
+      # Đường dẫn chứa plugin connector
+      CONNECT_PLUGIN_PATH: '/usr/share/java,/usr/share/confluent-hub-components,/data/connect-jars'
+    volumes:
+      - ./plugins-kafka:/data/connect-jars
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     ports: ["8080:8080"]
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-    depends_on: [kafka]
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: 'first-connect'
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: 'http://kafka-connect:8083'
+    depends_on: [kafka, kafka-connect]
 
   redis:
     image: redis:7
